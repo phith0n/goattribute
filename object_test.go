@@ -58,3 +58,57 @@ func TestSetAttr(t *testing.T) {
 	assert.NotNil(t, New(config).SetAttr("Input.NotExists", "123123"))
 	assert.NotNil(t, New(config).SetAttr("NotExists.Test", "123123"))
 }
+
+func TestGetAttr(t *testing.T) {
+	var config = &configTestStruct{
+		Name: "example1",
+		Input: &inputTestStruct{
+			Std:  1,
+			Name: "example2",
+		},
+		Output: []outputTestStruct{
+			{
+				Filename: "example3",
+			},
+			{
+				Filename: "example4",
+			},
+		},
+	}
+
+	var attr = New(config)
+	name, err := attr.GetAttr("Name")
+	assert.NoError(t, err)
+	assert.Equal(t, "example1", name)
+
+	std, err := attr.GetAttr("Input.Std")
+	assert.NoError(t, err)
+	assert.Equal(t, int8(1), std)
+
+	name, err = attr.GetAttr("Input.Name")
+	assert.NoError(t, err)
+	assert.Equal(t, "example2", name)
+
+	filename, err := attr.GetAttr("Output[0].Filename")
+	assert.NoError(t, err)
+	assert.Equal(t, "example3", filename)
+
+	filename, err = attr.GetAttr("Output[1].Filename")
+	assert.NoError(t, err)
+	assert.Equal(t, "example4", filename)
+
+	_, err = attr.GetAttr("NotExists")
+	assert.NotNil(t, err)
+
+	_, err = attr.GetAttr("NotExists.Test")
+	assert.NotNil(t, err)
+
+	_, err = attr.GetAttr("Input.NotExists")
+	assert.NotNil(t, err)
+
+	_, err = attr.GetAttr("Test.NotExists")
+	assert.NotNil(t, err)
+
+	_, err = attr.GetAttr("Output[3].Filename")
+	assert.NotNil(t, err)
+}

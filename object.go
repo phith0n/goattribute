@@ -74,6 +74,44 @@ func (a *Attribute) SetAttr(path string, value interface{}) error {
 	return err
 }
 
+func (a *Attribute) GetAttr(path string) (interface{}, error) {
+	keys := strings.Split(path, ".")
+	currentValue := reflect.ValueOf(a.obj).Elem()
+
+	for _, key := range keys {
+		if !currentValue.IsValid() {
+			return nil, errors.New("filed not found in path")
+		}
+
+		matches := arrayPattern.FindStringSubmatch(key)
+		if len(matches) == 3 {
+			field := matches[1]
+			index, _ := strconv.Atoi(matches[2])
+			currentValue = currentValue.FieldByName(field)
+			if currentValue.Kind() == reflect.Ptr {
+				currentValue = currentValue.Elem()
+			}
+
+			if currentValue.Kind() == reflect.Slice && currentValue.Len() > index {
+				currentValue = currentValue.Index(index)
+			} else {
+				return nil, errors.New("unsupported type")
+			}
+		} else {
+			if currentValue.Kind() == reflect.Ptr {
+				currentValue = currentValue.Elem()
+			}
+			currentValue = currentValue.FieldByName(key)
+		}
+	}
+
+	if currentValue.IsValid() {
+		return currentValue.Interface(), nil
+	} else {
+		return nil, fmt.Errorf("invalid path")
+	}
+}
+
 func (a *Attribute) ToString() string {
 	return fmt.Sprintf("%v", a.obj)
 }
