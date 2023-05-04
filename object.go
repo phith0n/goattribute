@@ -39,7 +39,7 @@ func (a *Attribute) SetAttr(path string, value interface{}) error {
 				currentValue = currentValue.Elem()
 			}
 
-			if currentValue.IsValid() && currentValue.Kind() == reflect.Slice {
+			if currentValue.Kind() == reflect.Slice && currentValue.Len() > index {
 				currentValue = currentValue.Index(index)
 			} else {
 				return errors.New("field type not slice")

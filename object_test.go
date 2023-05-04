@@ -52,6 +52,8 @@ func TestSetAttr(t *testing.T) {
 	assert.Nil(t, New(config).SetAttr("Output[1].Filename", "test4"))
 	assert.Equal(t, "test4", config.Output[1].Filename)
 
+	assert.NotNil(t, New(config).SetAttr("Input", "test"))
+	assert.NotNil(t, New(config).SetAttr("Output[2].Filename", "test5"))
 	assert.NotNil(t, New(config).SetAttr("NotExists", "123123"))
 	assert.NotNil(t, New(config).SetAttr("Input.NotExists", "123123"))
 	assert.NotNil(t, New(config).SetAttr("NotExists.Test", "123123"))
