@@ -28,6 +28,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	
 	"github.com/phith0n/goattribute"
 )
 
@@ -49,11 +50,7 @@ type configTestStruct struct {
 func main() {
 	var config = configTestStruct{
 		Input: &inputTestStruct{},
-		Output: []outputTestStruct{
-			{
-				Filename: "placeholder",
-			},
-		},
+		Output: []outputTestStruct{{Filename: "placeholder"}},
 	}
 	var attr = goattribute.New(&config)
 	attr.SetAttr("Name", "hello")
@@ -61,8 +58,15 @@ func main() {
 	attr.SetAttr("Input.Std", 2)
 	attr.SetAttr("Output[0].Filename", "test.txt")
 
-	fmt.Println(json.Marshal(attr.GetObject()))
+	data, _ := json.Marshal(attr.GetObject())
+	fmt.Println(string(data))
 }
+```
+
+Output will be:
+
+```
+{"name":"hello","input":{"std":2,"name":"world"},"output":[{"filename":"test.txt"}]}
 ```
 
 ## Caveats
