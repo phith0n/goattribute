@@ -37,6 +37,9 @@ func (a *Attribute) SetAttr(path string, value interface{}) error {
 			currentValue = currentValue.FieldByName(field)
 			if currentValue.Kind() == reflect.Ptr {
 				currentValue = currentValue.Elem()
+				if !currentValue.IsValid() {
+					return errors.New("cannot set field on a nil object")
+				}
 			}
 
 			if currentValue.Kind() == reflect.Slice && currentValue.Len() > index {
@@ -47,7 +50,11 @@ func (a *Attribute) SetAttr(path string, value interface{}) error {
 		} else {
 			if currentValue.Kind() == reflect.Ptr {
 				currentValue = currentValue.Elem()
+				if !currentValue.IsValid() {
+					return errors.New("cannot set field on a nil object")
+				}
 			}
+
 			currentValue = currentValue.FieldByName(key)
 		}
 	}
@@ -112,66 +119,6 @@ func (a *Attribute) GetAttr(path string) (interface{}, error) {
 	}
 }
 
-func (a *Attribute) ToString() string {
-	return fmt.Sprintf("%v", a.obj)
-}
-
-func (a *Attribute) ToInt() (int, error) {
-	var i int
-	err := CopyInt(&i, a.obj)
-	return i, err
-}
-
-func (a *Attribute) ToInt8() (int8, error) {
-	var i int8
-	err := CopyInt(&i, a.obj)
-	return i, err
-}
-
-func (a *Attribute) ToInt16() (int16, error) {
-	var i int16
-	err := CopyInt(&i, a.obj)
-	return i, err
-}
-
-func (a *Attribute) ToInt32() (int32, error) {
-	var i int32
-	err := CopyInt(&i, a.obj)
-	return i, err
-}
-
-func (a *Attribute) ToInt64() (int64, error) {
-	var i int64
-	err := CopyInt(&i, a.obj)
-	return i, err
-}
-
-func (a *Attribute) ToUInt() (uint, error) {
-	var i uint
-	err := CopyInt(&i, a.obj)
-	return i, err
-}
-
-func (a *Attribute) ToUInt8() (uint8, error) {
-	var i uint8
-	err := CopyInt(&i, a.obj)
-	return i, err
-}
-
-func (a *Attribute) ToUInt16() (uint16, error) {
-	var i uint16
-	err := CopyInt(&i, a.obj)
-	return i, err
-}
-
-func (a *Attribute) ToUInt32() (uint32, error) {
-	var i uint32
-	err := CopyInt(&i, a.obj)
-	return i, err
-}
-
-func (a *Attribute) ToUInt64() (uint64, error) {
-	var i uint64
-	err := CopyInt(&i, a.obj)
-	return i, err
+func (a *Attribute) GetObject() interface{} {
+	return a.obj
 }

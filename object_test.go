@@ -112,3 +112,19 @@ func TestGetAttr(t *testing.T) {
 	_, err = attr.GetAttr("Output[3].Filename")
 	assert.NotNil(t, err)
 }
+
+func TestNilSet(t *testing.T) {
+	var config configTestStruct
+	var attr = New(&config)
+	assert.NoError(t, attr.SetAttr("Name", "hello"))
+	assert.NotNil(t, attr.SetAttr("Input.Name", "world"))
+	assert.NotNil(t, attr.SetAttr("Input.Std", 2))
+	assert.NotNil(t, attr.SetAttr("Output[0].Filename", "test.txt"))
+
+	config.Input = &inputTestStruct{}
+	assert.NoError(t, attr.SetAttr("Input.Name", "world"))
+	assert.Equal(t, "world", config.Input.Name)
+	name, err := attr.GetAttr("Input.Name")
+	assert.NoError(t, err)
+	assert.Equal(t, "world", name)
+}
