@@ -14,10 +14,16 @@ type outputTestStruct struct {
 	Filename string `json:"filename"`
 }
 
+type userTestStruct struct {
+	Username string `json:"username"`
+	Age      int    `json:"age"`
+}
+
 type configTestStruct struct {
-	Name   string             `json:"name"`
-	Input  *inputTestStruct   `json:"input"`
-	Output []outputTestStruct `json:"output"`
+	Name       string             `json:"name"`
+	Input      *inputTestStruct   `json:"input"`
+	Output     []outputTestStruct `json:"output"`
+	LinkedUser userTestStruct     `json:"linked_user"`
 }
 
 func TestSetAttr(t *testing.T) {
@@ -35,6 +41,10 @@ func TestSetAttr(t *testing.T) {
 				Filename: "example4",
 			},
 		},
+		LinkedUser: userTestStruct{
+			Username: "example",
+			Age:      29,
+		},
 	}
 
 	assert.Nil(t, New(config).SetAttr("Name", "test1"))
@@ -51,6 +61,12 @@ func TestSetAttr(t *testing.T) {
 
 	assert.Nil(t, New(config).SetAttr("Output[1].Filename", "test4"))
 	assert.Equal(t, "test4", config.Output[1].Filename)
+
+	assert.Nil(t, New(config).SetAttr("LinkedUser.Username", "test5"))
+	assert.Equal(t, "test5", config.LinkedUser.Username)
+
+	assert.Nil(t, New(config).SetAttr("LinkedUser.Age", 33))
+	assert.Equal(t, 33, config.LinkedUser.Age)
 
 	assert.NotNil(t, New(config).SetAttr("Input", "test"))
 	assert.NotNil(t, New(config).SetAttr("Output[2].Filename", "test5"))
@@ -73,6 +89,10 @@ func TestGetAttr(t *testing.T) {
 			{
 				Filename: "example4",
 			},
+		},
+		LinkedUser: userTestStruct{
+			Username: "example5",
+			Age:      38,
 		},
 	}
 
@@ -97,6 +117,14 @@ func TestGetAttr(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, "example4", filename)
 
+	username, err := attr.GetAttr("LinkedUser.Username")
+	assert.NoError(t, err)
+	assert.Equal(t, "example5", username)
+
+	age, err := attr.GetAttr("LinkedUser.Age")
+	assert.NoError(t, err)
+	assert.Equal(t, 38, age)
+
 	_, err = attr.GetAttr("NotExists")
 	assert.NotNil(t, err)
 
@@ -117,6 +145,8 @@ func TestNilSet(t *testing.T) {
 	var config configTestStruct
 	var attr = New(&config)
 	assert.NoError(t, attr.SetAttr("Name", "hello"))
+	assert.NoError(t, attr.SetAttr("LinkedUser.Username", "test2"))
+	assert.NoError(t, attr.SetAttr("LinkedUser.Age", 45))
 	assert.NotNil(t, attr.SetAttr("Input.Name", "world"))
 	assert.NotNil(t, attr.SetAttr("Input.Std", 2))
 	assert.NotNil(t, attr.SetAttr("Output[0].Filename", "test.txt"))
