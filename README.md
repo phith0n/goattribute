@@ -33,18 +33,18 @@ import (
 )
 
 type inputTestStruct struct {
-	Std  int8   `json:"std"`
-	Name string `json:"name"`
+	Std  int8   `json:"std" yaml:"std"`
+	Name string `json:"name" yaml:"name"`
 }
 
 type outputTestStruct struct {
-	Filename string `json:"filename"`
+	Filename string `json:"filename" yaml:"filename"`
 }
 
 type configTestStruct struct {
-	Name   string             `json:"name"`
-	Input  *inputTestStruct   `json:"input"`
-	Output []outputTestStruct `json:"output"`
+	Name   string             `json:"name" yaml:"name"`
+	Input  *inputTestStruct   `json:"input" yaml:"input"`
+	Output []outputTestStruct `json:"output" yaml:"output"`
 }
 
 func main() {
@@ -67,6 +67,13 @@ Output will be:
 
 ```
 {"name":"hello","input":{"std":2,"name":"world"},"output":[{"filename":"test.txt"}]}
+```
+
+Struct tag is also supported:
+
+```go
+var attr = goattribute.NewWithTag(&config, "json")
+attr.SetAttr("input.name", "tag support")
 ```
 
 ## Caveats
