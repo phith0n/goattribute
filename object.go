@@ -17,8 +17,16 @@ func New(obj interface{}) *Attribute {
 	}
 }
 
+func NewWithTag(obj interface{}, tagName string) *Attribute {
+	return &Attribute{
+		obj:     obj,
+		tagName: tagName,
+	}
+}
+
 type Attribute struct {
-	obj interface{}
+	tagName string
+	obj     interface{}
 }
 
 func (a *Attribute) SetAttr(path string, value interface{}) error {
@@ -30,11 +38,12 @@ func (a *Attribute) SetAttr(path string, value interface{}) error {
 			return errors.New("filed not found in path")
 		}
 
+		tagToName := a.getTagMap(currentValue)
 		matches := arrayPattern.FindStringSubmatch(key)
 		if len(matches) == 3 {
-			field := matches[1]
+			name := matches[1]
 			index, _ := strconv.Atoi(matches[2])
-			currentValue = currentValue.FieldByName(field)
+			currentValue = currentValue.FieldByName(tagToName[name])
 			if currentValue.Kind() == reflect.Ptr {
 				currentValue = currentValue.Elem()
 				if !currentValue.IsValid() {
@@ -55,7 +64,7 @@ func (a *Attribute) SetAttr(path string, value interface{}) error {
 				}
 			}
 
-			currentValue = currentValue.FieldByName(key)
+			currentValue = currentValue.FieldByName(tagToName[key])
 		}
 	}
 
@@ -90,11 +99,12 @@ func (a *Attribute) GetAttr(path string) (interface{}, error) {
 			return nil, errors.New("filed not found in path")
 		}
 
+		tagToName := a.getTagMap(currentValue)
 		matches := arrayPattern.FindStringSubmatch(key)
 		if len(matches) == 3 {
-			field := matches[1]
+			name := matches[1]
 			index, _ := strconv.Atoi(matches[2])
-			currentValue = currentValue.FieldByName(field)
+			currentValue = currentValue.FieldByName(tagToName[name])
 			if currentValue.Kind() == reflect.Ptr {
 				currentValue = currentValue.Elem()
 			}
@@ -108,11 +118,11 @@ func (a *Attribute) GetAttr(path string) (interface{}, error) {
 			if currentValue.Kind() == reflect.Ptr {
 				currentValue = currentValue.Elem()
 			}
-			currentValue = currentValue.FieldByName(key)
+			currentValue = currentValue.FieldByName(tagToName[key])
 		}
 	}
 
-	if currentValue.IsValid() {
+	if currentValue.IsValid() && currentValue.CanInterface() {
 		return currentValue.Interface(), nil
 	} else {
 		return nil, fmt.Errorf("invalid path")
@@ -121,4 +131,34 @@ func (a *Attribute) GetAttr(path string) (interface{}, error) {
 
 func (a *Attribute) GetObject() interface{} {
 	return a.obj
+}
+
+func (a *Attribute) getTagMap(val reflect.Value) map[string]string {
+	var m = make(map[string]string)
+	var t reflect.Type
+
+	if val.Kind() == reflect.Ptr && !val.IsNil() {
+		t = val.Elem().Type()
+	} else if val.Kind() == reflect.Struct {
+		t = val.Type()
+	} else {
+		return m
+	}
+
+	for i := 0; i < t.NumField(); i++ {
+		field := t.Field(i)
+		if a.tagName == "" {
+			m[field.Name] = field.Name
+			continue
+		}
+
+		tagValue := field.Tag.Get(a.tagName)
+		if tagValue != "" {
+			m[tagValue] = field.Name
+		} else {
+			m[field.Name] = field.Name
+		}
+	}
+
+	return m
 }
