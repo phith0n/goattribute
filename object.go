@@ -10,6 +10,8 @@ import (
 )
 
 var arrayPattern = regexp.MustCompile(`(\w+)\[(\d+)\]`)
+var truePattern = regexp.MustCompile(`^y|Y|yes|Yes|YES|true|True|TRUE|on|On|ON|1$`)
+var falsePattern = regexp.MustCompile(`^n|N|no|No|NO|false|False|FALSE|off|Off|OFF|0$`)
 
 func New(obj interface{}) *Attribute {
 	return &Attribute{
@@ -80,6 +82,15 @@ func (a *Attribute) SetAttr(path string, value interface{}) error {
 			}
 		case reflect.String:
 			currentValue.SetString(fmt.Sprintf("%v", value))
+		case reflect.Bool:
+			var v = strings.TrimSpace(fmt.Sprintf("%v", value))
+			if truePattern.MatchString(v) {
+				currentValue.SetBool(true)
+			} else if falsePattern.MatchString(v) {
+				currentValue.SetBool(false)
+			} else {
+				return fmt.Errorf("cannot set %s to a boolean field", v)
+			}
 		default:
 			return errors.New("unsupported type")
 		}

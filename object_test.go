@@ -6,8 +6,9 @@ import (
 )
 
 type inputTestStruct struct {
-	Std  int8   `json:"std" yaml:"std"`
-	Name string `json:"name" yaml:"name"`
+	Enabled bool   `json:"enabled" yaml:"enabled"`
+	Std     int8   `json:"std" yaml:"std"`
+	Name    string `json:"name" yaml:"name"`
 }
 
 type outputTestStruct struct {
@@ -32,8 +33,9 @@ func TestSetAttr(t *testing.T) {
 	var config = &configTestStruct{
 		Name: "example1",
 		Input: &inputTestStruct{
-			Std:  1,
-			Name: "example2",
+			Enabled: false,
+			Std:     1,
+			Name:    "example2",
 		},
 		Output: []outputTestStruct{
 			{
@@ -85,8 +87,9 @@ func TestSetAttrWithTag(t *testing.T) {
 	var config = &configTestStruct{
 		Name: "example1",
 		Input: &inputTestStruct{
-			Std:  1,
-			Name: "example2",
+			Enabled: false,
+			Std:     1,
+			Name:    "example2",
 		},
 		Output: []outputTestStruct{
 			{
@@ -144,8 +147,9 @@ func TestGetAttr(t *testing.T) {
 	var config = &configTestStruct{
 		Name: "example1",
 		Input: &inputTestStruct{
-			Std:  1,
-			Name: "example2",
+			Enabled: false,
+			Std:     1,
+			Name:    "example2",
 		},
 		Output: []outputTestStruct{
 			{
@@ -214,8 +218,9 @@ func TestGetAttrWithTag(t *testing.T) {
 	var config = &configTestStruct{
 		Name: "example1",
 		Input: &inputTestStruct{
-			Std:  1,
-			Name: "example2",
+			Enabled: false,
+			Std:     1,
+			Name:    "example2",
 		},
 		Output: []outputTestStruct{
 			{
@@ -310,4 +315,29 @@ func TestNilSetWithTag(t *testing.T) {
 	name, err := attr.GetAttr("input.name")
 	assert.NoError(t, err)
 	assert.Equal(t, "world", name)
+}
+
+func TestBooleanField(t *testing.T) {
+	var obj = &inputTestStruct{
+		Enabled: false,
+		Std:     1,
+		Name:    "example",
+	}
+
+	var ts = []any{"y", "Y", "yes", "YES", "Yes", "True", "true", "TRUE", "on", "On", "ON", "1", 1, true}
+	var fs = []any{"n", "N", "No", "no", "NO", "false", "False", "FALSE", "Off", "off", "OFF", "0", 0, false}
+
+	for i := 0; i < len(ts); i++ {
+		assert.Nil(t, New(obj).SetAttr("Enabled", ts[i]))
+		assert.True(t, obj.Enabled)
+
+		assert.Nil(t, New(obj).SetAttr("Enabled", fs[i]))
+		assert.False(t, obj.Enabled)
+	}
+
+	assert.NotNil(t, New(obj).SetAttr("Enabled", &outputTestStruct{}))
+	assert.NotNil(t, New(obj).SetAttr("Enabled", []string{"1", "2"}))
+	assert.NotNil(t, New(obj).SetAttr("Enabled", 2333))
+	assert.NotNil(t, New(obj).SetAttr("Enabled", ""))
+	assert.NotNil(t, New(obj).SetAttr("Enabled", "xxxxx"))
 }
