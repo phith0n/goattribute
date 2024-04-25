@@ -1,3 +1,5 @@
+**Deprecated: use <https://github.com/jmespath/go-jmespath> instead**
+
 # goattribute
 
 `goattribute` is a lightweight Go library that allows you to set (and get) attributes of a struct dynamically, using dot notation (e.g., `a.b.c`). This can be particularly useful when dealing with dynamic or runtime configuration settings, JSON manipulation, or other similar use cases.
